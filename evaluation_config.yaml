@@ -9,11 +9,11 @@ use_language: false
 use_task: false
 
 ood_task_configs:
-  environment: "./libero_ood/ood_environment.yaml"
-  swap: "./libero_ood/ood_spatial_relation.yaml"
-  object: "./libero_ood/ood_object.yaml"
-  language: "./libero_ood/ood_language.yaml"
-  task: "./libero_ood/ood_task.yaml"
+  environment: "./LIBERO-PRO/libero_ood/ood_environment.yaml"
+  swap: "./LIBERO-PRO/libero_ood/ood_spatial_relation.yaml"
+  object: "./LIBERO-PRO/libero_ood/ood_object.yaml"
+  language: "./LIBERO-PRO/libero_ood/ood_language.yaml"
+  task: "./LIBERO-PRO/libero_ood/ood_task.yaml"
 
 perturbation_mapping:
   use_environment: env
