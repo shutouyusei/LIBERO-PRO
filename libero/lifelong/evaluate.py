@@ -98,6 +98,8 @@ def parse_args():
     parser.add_argument("--load_task", type=int)
     parser.add_argument("--device_id", type=int)
     parser.add_argument("--save-videos", action="store_true")
+    parser.add_argument("--num-envs", type=int, default=None,
+                        help="Number of parallel environments (default: cfg.eval.n_eval)")
     # parser.add_argument('--save_dir',  type=str, required=True)
     args = parser.parse_args()
     args.device_id = "cuda:" + str(args.device_id)
@@ -240,7 +242,7 @@ def main():
             "camera_widths": cfg.data.img_w,
         }
 
-        env_num = 20
+        env_num = args.num_envs if args.num_envs is not None else cfg.eval.n_eval
         env = SubprocVectorEnv(
             [lambda: OffScreenRenderEnv(**env_args) for _ in range(env_num)]
         )
