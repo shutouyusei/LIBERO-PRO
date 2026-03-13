@@ -35,7 +35,10 @@ def get_dataset(
     for modality_name, modality_list in obs_modality.items():
         all_obs_keys += modality_list
     shape_meta = FileUtils.get_shape_metadata_from_dataset(
-        dataset_path=dataset_path, all_obs_keys=all_obs_keys, verbose=False
+        dataset_config={"path": dataset_path},
+        action_keys=["actions"],
+        all_obs_keys=all_obs_keys,
+        verbose=False,
     )
 
     seq_len = seq_len
@@ -43,7 +46,9 @@ def get_dataset(
     dataset = SequenceDataset(
         hdf5_path=dataset_path,
         obs_keys=shape_meta["all_obs_keys"],
+        action_keys=["actions"],
         dataset_keys=["actions"],
+        action_config={"actions": {"normalization": None}},
         load_next_obs=False,
         frame_stack=frame_stack,
         seq_length=seq_len,  # length-10 temporal sequences
@@ -53,10 +58,15 @@ def get_dataset(
         goal_mode=None,
         hdf5_cache_mode=hdf5_cache_mode,  # cache dataset in memory to avoid repeated file i/o
         hdf5_use_swmr=False,
-        hdf5_normalize_obs=None,
+        hdf5_normalize_obs=False,
         filter_by_attribute=filter_key,  # can optionally provide a filter key here
     )
     return dataset, shape_meta
+
+
+def _cast_obs_to_float32(obs_dict):
+    """Cast all numpy arrays in obs dict to float32 for model compatibility."""
+    return {k: v.astype(np.float32) if isinstance(v, np.ndarray) else v for k, v in obs_dict.items()}
 
 
 class SequenceVLDataset(Dataset):
@@ -71,6 +81,7 @@ class SequenceVLDataset(Dataset):
 
     def __getitem__(self, idx):
         return_dict = self.sequence_dataset.__getitem__(idx)
+        return_dict["obs"] = _cast_obs_to_float32(ObsUtils.process_obs_dict(return_dict["obs"]))
         return_dict["task_emb"] = self.task_emb
         return return_dict
 
@@ -123,6 +134,7 @@ class GroupedTaskDataset(Dataset):
     def __getitem__(self, idx):
         oi, oti = self.__get_original_task_idx(idx)
         return_dict = self.sequence_datasets[oti].__getitem__(oi)
+        return_dict["obs"] = _cast_obs_to_float32(ObsUtils.process_obs_dict(return_dict["obs"]))
         return_dict["task_emb"] = self.task_embs[oti]
         return return_dict
 
